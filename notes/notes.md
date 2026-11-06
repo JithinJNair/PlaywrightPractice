@@ -1345,6 +1345,99 @@ test.only("toHaveScreenShot",async({page})=>{
 - It doesnt have autowait mechanism or default time.
 - Auto retrying assertions are used on page and locator,while non retrying are used to verift values.
 
+//skipped classes on 03,0,05 of november 2026.get the notes.
+
+### Page based wait
+2. Page based wait
+- It is used to pause the script until the page reaches the specific load state.
+- load state
+    - documentloaded = wait until the document is loaded
+    - load = wait until th epage(html,css,js)
+    - networkidle= wait until all the network request finish.
+
+ ```typescript
+ import {expect, Locator, test} from "@playwright/test"
+
+test("waitForLoadState",async({page})=>{
+    await page.goto("https://amazon.in");
+    await page.locator("#nav-cart-count-container").click();
+    // await page.waitForLoadState('documentloaded');
+    // await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/cart/)
+})
+```
+3. waitForEvent = It is used to wait until specific event happend on page or browser.
+- event can be- tab opening,prompt appears
+- enetname = download/dialog
+```typescript
+test.only("waitForEvent", async ({ page }) => {
+    await page.goto("https://demoapps.qspiders.com/ui/download?sublist=0");
+    await page.locator("#writeArea").fill("Im downloading a file");
+    let[downloadFile] = await Promise.all([
+        page.waitForEvent('download'),
+        page.locator("#downloadButton").click()
+    ]);
+
+    console.log(await downloadFile.path());
+});
+```
+### Custom Wait
+### Custom Wait – `page.waitForFunction()`
+- It is used when we want Playwright to wait for a user-defined condition to become true.
+- `page.waitForFunction()` executes JavaScript in the browser context and waits until the specified function returns a truthy value.
+- Playwright repeatedly evaluates the function until the condition becomes true or the timeout expires.
+- It works with the **browser page's JavaScript environment (DOM and browser APIs)**, rather than directly interacting with Playwright locators.
+- It is working directly on dom,not on webpage.
+```typescript
+await page.waitForFunction(() => {
+    return document.title === "Dashboard";
+});
+```
+
+**Why is it generally less recommended?**
+- It repeatedly evaluates the JavaScript condition.
+- It can make test scripts harder to read and maintain.
+- It may introduce unnecessary complexity.
+- Playwright already provides built-in auto-waiting and locator assertions for most common scenarios.
+
+**When should we use it?**
+- When we need to wait for a custom browser-side condition that cannot be conveniently handled using built-in Playwright methods.
+```typescript
+await page.waitForFunction(() => {
+    return document.querySelectorAll(".product").length === 5;
+});
+```
+```typescript
+await page.waitForFunction(() => {
+    return document.title === "Dashboard";
+});
+```
+```typescript
+test.only("customwait",async({page})=>{
+    await page.goto("https://www.amazon.in/")
+    await page.locator("#nav-cart-count-container").click()
+    await page.waitForFunction(()=>{
+         return document.readyState==="complete"
+    })
+    await expect(page).toHaveURL(/cart/)
+})
+
+test.only("custom1",async({page})=>{
+    await page.goto("https://www.amazon.in/")
+    await page.locator("input#twotabsearchtextbox").fill("shoes")
+    await page.waitForFunction(()=>{
+        let element= document.querySelectorAll(".s-suggestion-container")
+        element.length>1
+    })
+    let autosuggestion:string[]=await page.locator("//div[@role='row']").allInnerTexts()
+    console.log(autosuggestion)
+})
+```
+
+
+
+
 
 
 
