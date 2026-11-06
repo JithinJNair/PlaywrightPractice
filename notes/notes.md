@@ -1434,6 +1434,135 @@ test.only("custom1",async({page})=>{
     console.log(autosuggestion)
 })
 ```
+## Mouse Action
+1. **click()**= perform click action
+- It performs left click
+- await page.locator("#id").click()
+- click methods takes many arguments-button,clicklunt,modifier,delay
+- arguments
+    1) button:describes which button should be clicked.left/right/middle.
+    2) clickCount: number of mouse clicks.
+    3) modifier:click+modifier key.
+    4) delay:in between mouse button press and release.
+
+2. **await page.mouse.click(x,y,{})**-we use coordinates instead of locator.
+- boundingbox() -gives x ,y coordinates and width and height.If no element present ,it will return null.
+```typescript
+const box = await page.locator("#id").boundingBox();
+
+if (box === null) {
+    console.log("Element not found or not visible");
+} else {
+    console.log("X coordinate: " + box.x);
+    console.log("Y coordinate: " + box.y);
+    console.log("Width: " + box.width);
+    console.log("Height: " + box.height);
+}
+```
+```typescript
+//"https://demoapps.qspiders.com/ui/download?sublist=0"
+import {expect, Locator, test} from "@playwright/test"
+
+test.only("click", async ({ page }) => {
+
+    // Normal left click
+    await page.goto("https://demoapps.qspiders.com/ui/button?sublist=0");
+    await page.locator("#btn").click();
+    await expect(page.locator(".text-green-600"))
+        .toContainText("You selected");
+
+    //Right click
+    //Method 1: Using locator click
+    // Playwright identifies the element using its locator.
+    // Automatically calculates the element's clickable position.
+    // Performs the right-click.
+    // You don't need to calculate coordinates manually.
+    await page.goto(
+        "https://demoapps.qspiders.com/ui/button/buttonRight?sublist=1"
+    );
+    
+    await page.locator("#btn_a").click({
+        button: "right",
+        clickCount: 2,
+        delay: 1000
+    });
+
+    await page.locator("//div[text()='Yes']").click();
+
+    // Method 2: Using boundingBox and mouse.click
+    // locator() identifies the element.
+    // boundingBox() gets its coordinates and dimensions.
+    // page.mouse.click() clicks at the specified X and Y coordinates.
+     await page.goto(
+        "https://demoapps.qspiders.com/ui/button/buttonRight?sublist=1"
+    );
+    const box = await page.locator("#btn_a").boundingBox();
+
+    await page.mouse.click(
+        box!.x + box!.width / 2,
+        box!.y + box!.height / 2,
+        { button: "right" }
+    );
+
+    await page.locator("//div[text()='Yes']").click();
+
+    await expect(page.locator(".text-green-600"))
+        .toContainText("You selected");
+    // Locator.click() is used to interact directly with an element, whereas page.mouse.click() is used to perform a mouse click at specific X and Y coordinates. We use page.mouse actions when we need coordinate-level control, such as canvas interactions, drawing or clicking a specific position
+});
+
+```
+3. **doubleClick** = used to perform doubleclick.
+- await page.loactor().dblclick()-locator based click(element action)
+- 
+```typescript
+test.only("doubleclick", async ({ page }) => {
+
+    // double click using locator.click()
+    await page.goto("https://demoapps.qspiders.com/ui/button/buttonDouble?sublist=2");
+    await page.locator("#btn_a").click({clickCount:2});
+    await expect(page.locator(".text-green-600"))
+        .toContainText("You selected");
+
+    //double click using normal click+ coordinate based click
+     await page.goto(
+        "https://demoapps.qspiders.com/ui/button/buttonDouble?sublist=2"
+    );
+    const box2 = await page.locator("#btn_a").boundingBox();
+
+    await page.mouse.click(
+        box2!.x + box2!.width / 2,
+        box2!.y + box2!.height / 2,
+        { button: "left", clickCount:2 }
+    );
+
+    await expect(page.locator(".text-green-600"))
+        .toContainText("You selected");
+    
+
+     // double click using locator.dblclick()
+    await page.goto("https://demoapps.qspiders.com/ui/button/buttonDouble?sublist=2");
+    await page.locator("#btn_a").dblclick();
+    await expect(page.locator(".text-green-600"))
+        .toContainText("You selected");
+
+    //double click using dblclick+ coordinate based click
+     await page.goto(
+        "https://demoapps.qspiders.com/ui/button/buttonDouble?sublist=2"
+    );
+    const box3 = await page.locator("#btn_a").boundingBox();
+
+    await page.mouse.dblclick(
+        box3!.x + box3!.width / 2,
+        box3!.y + box3!.height / 2,
+    );
+
+    await expect(page.locator(".text-green-600"))
+        .toContainText("You selected");
+});
+```
+
+
 
 
 
