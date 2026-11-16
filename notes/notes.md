@@ -1561,6 +1561,436 @@ test.only("doubleclick", async ({ page }) => {
         .toContainText("You selected");
 });
 ```
+4. **hovering** - moving the mouse pointer /mouse cursor over an element.
+- locator based method: await page.locator().hover()
+- mouse class method- mouse.move(x,y)
+
+5. **clickandhold** 
+- mouse.down(): press and hold.
+- mouse.up():release the control.
+```typescript
+test.only("hovering", async ({ page }) => {
+    await page.goto("https://demoapps.qspiders.com/ui/button/buttonDouble?sublist=0");
+    //hovering using locator based method
+    await page.locator("#circle").hover();
+    //hovering using mouse class
+    let circle = await page.locator("#circle").boundingBox();
+    await page.mouse.move(circle!.x + circle!.width / 2,circle!.y + circle!.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(2000);
+    await page.mouse.up();
+});
+```
+
+6. **dragAndDrop**
+- locator based method:
+```typescript
+let source = await page.locator("source")
+let target = await page.locator("target")
+await source.dragTo(target);
+```
+```typescript
+test.only("drag and drop",async({page})=>{
+  await page.goto("https://demoapps.qspiders.com/ui/dragDrop/dragToCorrect?sublist=2")
+  //loactor based dragto
+  let source= page.locator("//div[text()='Mobile Charger']")
+  let target=page.locator("//div[text()='Mobile Accessories']/parent::div")
+  await source.dragTo(target)
+  await page.waitForTimeout(2000)
+
+  //mouse action
+  let box=await page.locator("//div[text()='Mobile Charger']").boundingBox()
+  await page.mouse.move(box!.x+box!.width/2,box!.y+box!.height/2)
+  await page.mouse.down()
+  let target=await page.locator("//div[text()='Mobile Accessories']/parent::div").boundingBox()
+  await page.mouse.move(target!.x+target!.width/2,target!.y+target!.height/2)
+  await page.mouse.up()
+  await page.waitForTimeout(2000)
+
+  //hover,up down
+  await page.gotto("https://demoapps.qspiders.com/ui/clickHold?sublist=0");
+  await page.locator("//div[text()='Mobile Charger']").hover()
+  await page.mouse.down()
+  await page.locator("//div[text()='Mobile Accessories']/parent::div").hover()
+  await page.mouse.up()
+  await page.waitForTimeout(2000)
+})
+```
+7. **scrolling**-scroll the webpage left,right,up,down
+- locator based method: scrollIntoViewIfNeeded()
+- mouse action: mouse.wheel(x,y)
+
+``` typescript
+test.only("scrolling",async({page})=>{
+  await page.goto("https://demoapps.qspiders.com/ui/scroll/newTabVertical")
+  //wheel
+  await page.mouse.wheel(0,1000)
+  await page.waitForTimeout(2000)
+  await page.mouse.wheel(0,-500)
+
+  //locator based method
+  await page.goto("https://doodles.google/")
+  await page.locator("#monthDropdown").scrollIntoViewIfNeeded()
+  await page.waitForTimeout(2000)
+})
+```
+
+### test case
+- //https://demoapps.qspiders.com/ui/slider?sublist=0
+- slide the bar to value 109.95
+```typescript
+test.only("slider", async ({ page }) => {
+
+    await page.goto("https://demoapps.qspiders.com/ui/slider?sublist=0");
+
+    let slider = page.locator("input[type='range']");
+
+    let boundingBox = await slider.boundingBox();
+
+    if (!boundingBox) {
+        throw new Error("Slider not found");
+    }
+
+    let targetValue = 109;
+    let minValue = 0;
+    let maxValue = 6000;
+
+    let percentage = (targetValue - minValue) / (maxValue - minValue);
+
+    let startX = boundingBox.x;
+    let targetX = boundingBox.x + (boundingBox.width * percentage);
+
+    let y = boundingBox.y + (boundingBox.height / 2);
+
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    //await page.mouse.move(targetX, y, { steps: 10 });
+    await page.mouse.move(targetX, y);
+    await page.mouse.up();
+
+});
+```
+```typescript
+test("slider using fill", async ({ page }) => {
+
+    await page.goto("https://demoapps.qspiders.com/ui/slider?sublist=0");
+
+    let slider = page.locator("input[type='range']");
+
+    await slider.fill("109");
+
+});
+```
+## Keybpoard actions
+- Keyboard actions are used to stimulate userinteraction with the keyboard,such as typing the text,pressing ,selecting the text using
+ using any shortcut keys.
+1) keyboard class
+- keyboard.type(text): types text into a focused element,that too character by character.
+  element become focused only agter clicking on it or performing focus() on it.
+  ```typescript
+  await page.locator("").click()
+  await page.keyboard.type("Jithin")
+  ```
+- keyboard.insertText(): this method inserts texts directly into the focused element in one go,like pasting.
+
+  ```typescript
+  await page.locator("").focus()
+  await page.keyboard.insertText("Jithin")
+  ```
+- keyboard.press(): It presses and release a single key or combination of keys on the focus element.
+  press does- press,click and hold,and then release.
+```typescript
+  await page.keyboard('enter');
+  await page.keyboard('control+A');
+  ```
+- keyboard.down():To press a single key.
+  It is used to press on the key and click and hold.use keyboard.up to release.
+```typescript
+  await page.keyboard.down('enter');
+  await page.keyboard.up('enter');
+  ```
+- keyboard.up():To release the key thats .
+```typescript
+  await page.keyboard.down('enter');
+  await page.keyboard.up('enter');
+  ```
+# Dropdowns in Playwright
+
+## 1. Types of Dropdowns
+
+There are four major types of dropdowns:
+
+1. **Standard Dropdowns**
+2. **Multi-Select Dropdowns**
+3. **Custom Dropdowns**
+4. **Auto-Suggestion Dropdowns**
+
+### 1.1 Static Dropdowns
+
+The following dropdowns are generally considered static dropdowns:
+
+- Standard Dropdowns
+- Multi-Select Dropdowns
+- Custom Dropdowns
+
+### 1.2 Dynamic Dropdowns
+
+- Auto-Suggestion Dropdowns
+
+Auto-suggestion dropdowns are dynamic because their options are generated or updated based on the user's input.
+
+---
+
+## 2. Standard Dropdowns
+
+### 2.1 What are Standard Dropdowns?
+
+- Standard dropdowns are built using the HTML `<select>` tag and `<option>` tags.
+- They allow users to select only one value at a time.
+- Playwright provides the `selectOption()` method to handle standard dropdowns.
+
+### 2.2 Ways to Select Options
+
+Playwright allows us to select an option using three approaches:
+
+1. **By Value**
+2. **By Index**
+3. **By Label**
+
+#### 1. Select by Value
+
+Select an option using its `value` attribute.
+
+```typescript
+await page.locator("#dropdown").selectOption({ value: "india" });
+```
+
+#### 2. Select by Index
+
+Select an option using its index position.
+
+```typescript
+await page.locator("#dropdown").selectOption({ index: 2 });
+```
+
+**Note:** Indexing starts from `0`.
+
+- Index 0 → First option
+- Index 1 → Second option
+- Index 2 → Third option
+
+#### 3. Select by Label
+
+Select an option using its visible text.
+
+```typescript
+await page.locator("#dropdown").selectOption({ label: "India" });
+```
+
+### 2.3 Important Points
+
+- `selectOption()` works with HTML `<select>` elements.
+- Standard dropdowns generally allow only one selection.
+- Indexing starts from zero.
+- We can use value, index, or label to select an option.
+
+```typescript
+test("Standard Dropdown-Singleselect", async ({ page, context }) => {
+    await page.goto("https://demoapps.qspiders.com/ui/dropdown?sublist=0");
+
+    let countryLocator = page.locator("#select3");
+    await countryLocator.selectOption({index:7})
+
+    let stateLocator = page.locator("#select5");
+    await stateLocator.selectOption({value:"Kerala"})
+
+    // let cityLocator = page.locator("#select3");
+    // await cityLocator.selectOption({label:"Alappuzha"})
+
+    await page.waitForTimeout(2000);
+});
+```
+## 3. Multi-Select Dropdowns
+- Multi-select dropdowns allow users to select multiple options from a dropdown list.
+- Unlike standard dropdowns, users can select more than one option at a time.
+- In HTML, multi-select dropdowns are generally created using the "<select>" tag with the multiple attribute.
+- Playwright provides the selectOption() method to select multiple options.
+- <select id="skills" multiple>
+  <option value="java">Java</option>
+</select>
+
+### 3.3 Ways to Select Multiple Options
+Playwright allows us to select multiple options using the following approaches:
+
+#### 1. Select by Value
+Select multiple options using their value attributes.
+```typescript
+await page.locator("#skills").selectOption([{ value: "java" },{ value: "python" },{ value: "sql" }]);
+```
+#### 2. Select by Label
+Select multiple options using their visible text.
+```typescript
+await page.locator("#skills").selectOption([{ label: "Java" },{ label: "Python" },{ label: "SQL" }]);
+```
+#### 3. Select by Index
+Select multiple options using their index positions.
+```typescript
+await page.locator("#skills").selectOption([{ index: 0 },{ index: 2 },{ index: 3 }]);
+```
+Note: Indexing starts from 0.
+
+#### 3.4 Selecting All Options
+We can select all options by passing an array of values.
+```typescript
+await page.locator("#skills").selectOption(["java","python","javascript","sql"]);
+```
+#### 3.5 Deselect All Options
+Use selectOption([]) to deselect all selected options.
+```typescript
+await page.locator("#skills").selectOption([]);
+```
+#### 3.6 Deselect a Specific Option
+Use locator.selectOption() to select the remaining options, excluding the option you want to deselect.
+```typescript
+await page.locator("#skills").selectOption([{ value: "java" },{ value: "sql" }]);
+```
+For example, if Java, Python, and SQL were selected, this will leave Java and SQL selected and deselect Python.
+```typescript
+test.skip("Standard Dropdown-MultiSelect", async ({ page }) => {
+
+    await page.goto(" https://demoapps.qspiders.com/ui/dropdown/multiSelect?sublist=1 ");
+   
+    let multiSelect = page.locator("#select-multiple-native");
+
+    // Select multiple options by Index
+    await multiSelect.selectOption([
+        { index: 0 },
+        { index: 2 },
+        { index: 3 }
+    ]);
+
+    await page.waitForTimeout(2000);
+
+    // Deselect All
+    await multiSelect.selectOption([]);
+
+    await page.waitForTimeout(2000);
+
+    // Select multiple options by Value
+    await multiSelect.selectOption([
+        { value: "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops" },
+        { value: "Mens Casual Premium Slim Fit T-Shirts" },
+        { value: "Mens Cotton Jacket" }
+    ]);
+
+    await page.waitForTimeout(2000);
+
+    // Deselect All
+    await multiSelect.selectOption([]);
+
+    await page.waitForTimeout(2000);
+
+    // Select multiple options by Label
+    // await multiSelect.selectOption([
+    //     { label: "Fjallraven - Foldsac..." },
+    //     { label: "Mens Casual Premium ..." },
+    //     { label: "Mens Cotton Jacket..." }
+    // ]);
+
+    await page.waitForTimeout(2000);
+
+});
+```
+
+### 4. Custom Dropdowns in Playwright
+- Custom dropdowns are dropdowns that are not created using the standard HTML select tag.
+- They are generally created using HTML elements like div, span, li, ul, and input.
+- They are designed and styled using CSS, JavaScript, or frameworks.
+- Unlike standard dropdowns, we cannot directly use Playwright's selectOption() method.
+- We interact with custom dropdowns using Playwright locator methods such as click(), locator(), filter(), and getByText().
+
+#### 4.1 How to Handle Custom Dropdowns?
+We generally follow these steps:
+1. Locate the dropdown element.
+2. Click on the dropdown to open it.
+3. Wait for the dropdown options to become visible.
+4. Locate the required option.
+5. Click on the required option.
+6. Verify that the option is selected.
+
+```typescript
+test("custom dropdown", async ({ page, context }) => {
+    await page.goto("https://demoqa.com/select-menu");
+
+    await page.locator("#selectOne").click();
+    await page.locator("//div[text()='Mr.']").click();
+
+    await page.waitForTimeout(2000);
+});
+```
+### 5. Auto-Suggestion Dropdowns in Playwright
+#### 5.1 What are Auto-Suggestion Dropdowns?
+- Auto-suggestion dropdowns are dropdowns in which options are dynamically generated or displayed based on the text entered by the user.
+- They are also called Autocomplete Dropdowns or Searchable Dropdowns.
+- When a user starts typing in the input field, matching suggestions appear automatically.
+- The suggestions may come from an API, database, or predefined list.
+- Unlike standard dropdowns, we generally interact with auto-suggestion dropdowns using fill(), type(), and click() methods.
+- We cannot directly use selectOption() unless the dropdown contains an actual HTML select element.
+
+```html
+<input type="text" id="country" placeholder="Search Country">
+
+<ul class="suggestions">
+    <li>India</li>
+    <li>Indonesia</li>
+    <li>Iceland</li>
+    <li>Ireland</li>
+</ul>
+```
+
+#### 5.2 How to Handle Auto-Suggestion Dropdowns?
+
+1. Locate the input field.
+2. Enter the required text using fill() or type().
+3. Wait for the suggestions to appear.
+4. Locate the required suggestion.
+5. Click on the required suggestion.
+6. Verify that the selected value is displayed in the input field.
+```typescript
+test("Auto-Suggestion Dropdown", async ({ page }) => {
+
+    await page.goto("https://example.com");
+
+    // Locate input field
+    let searchBox = page.locator("#country");
+
+    // Enter text
+    await searchBox.fill("Ind");
+
+    await page.waitForTimeout(2000);
+
+    // Select required suggestion
+    await page.getByText("India", { exact: true }).click();
+
+    await page.waitForTimeout(2000);
+
+});
+```
+
+```typescript
+test.only("autosuggestion dropdown",async({page})=>{
+  await page.goto("https://www.amazon.in/")
+  await page.locator("#twotabsearchtextbox").fill("shoes")
+  let allsug=await page.locator("//div[@role='row']").all()
+  for(let sug of allsug){
+    let text=await sug.textContent()
+    if(text?.includes(" for woman"))
+      await sug.click()
+      break;
+  }
+})
+```
+
 
 
 

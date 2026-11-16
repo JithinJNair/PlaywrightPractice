@@ -172,6 +172,25 @@ test.only("checkboxes", async ({ page }) => {
     }
 });
 
+test.only("checkboxes2", async ({ page }) => {
+    await page.goto("https://testautomationpractice.blogspot.com/");
+
+    let checkBoxes: Locator[] = await page.locator("//input[@class='form-check-input' and @type='checkbox']").all();
+
+    for (let checkBox of checkBoxes) {
+        await checkBox.check();
+    }
+    for (let checkBox of checkBoxes) {
+        let id = await checkBox.getAttribute("id");
+
+        if (id === "tuesday" || id === "wednesday") {
+            await checkBox.uncheck();
+        }
+    }
+});
+
+
+
 
 
 

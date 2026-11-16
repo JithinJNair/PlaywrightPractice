@@ -41,7 +41,7 @@ test("click", async ({ page }) => {
         .toContainText("You selected");
 });
 
-test.only("doubleclick", async ({ page }) => {
+test("doubleclick", async ({ page }) => {
 
     // double click using normal click+ locator click
     await page.goto("https://demoapps.qspiders.com/ui/button/buttonDouble?sublist=2");
@@ -85,3 +85,93 @@ test.only("doubleclick", async ({ page }) => {
     await expect(page.locator(".text-green-600"))
         .toContainText("You selected");
 });
+
+test("hovering", async ({ page }) => {
+
+
+    await page.goto("https://demoapps.qspiders.com/ui/button/buttonDouble?sublist=0");
+    //hovering using locator based method
+    await page.locator("#circle").hover();
+    //hovering using mouse class
+    let circle = await page.locator("#circle").boundingBox();
+    await page.mouse.move(circle!.x + circle!.width / 2,circle!.y + circle!.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(2000);
+    await page.mouse.up();
+
+});
+
+
+test("drag and drop",async({page})=>{
+//   await page.goto("https://demoapps.qspiders.com/ui/dragDrop/dragToCorrect?sublist=2")
+//   //dragto
+//   let source= page.locator("//div[text()='Mobile Charger']")
+//   let target=page.locator("//div[text()='Mobile Accessories']/parent::div")
+//   await source.dragTo(target)
+//   await page.waitForTimeout(2000)
+
+//   //mouse action
+//   let box=await page.locator("//div[text()='Mobile Charger']").boundingBox()
+//   await page.mouse.move(box!.x+box!.width/2,box!.y+box!.height/2)
+//   await page.mouse.down()
+//   let target=await page.locator("//div[text()='Mobile Accessories']/parent::div").boundingBox()
+//   await page.mouse.move(target!.x+target!.width/2,target!.y+target!.height/2)
+//   await page.mouse.up()
+//   await page.waitForTimeout(2000)
+
+//   //hover,up down
+//   await page.locator("//div[text()='Mobile Charger']").hover()
+//   await page.mouse.down()
+//   await page.locator("//div[text()='Mobile Accessories']/parent::div").hover()
+//   await page.mouse.up()
+//   await page.waitForTimeout(2000)
+
+})
+
+test("scrolling",async({page})=>{
+  await page.goto("https://demoapps.qspiders.com/ui/scroll/newTabVertical")
+  //wheel
+  await page.mouse.wheel(0,1000)
+  await page.waitForTimeout(2000)
+  await page.mouse.wheel(0,-500)
+
+  //locator based method
+  await page.goto("https://doodles.google/")
+  await page.locator("#monthDropdown").scrollIntoViewIfNeeded()
+  await page.waitForTimeout(2000)
+})
+
+
+test.only("slider", async ({ page }) => {
+
+    await page.goto("https://demoapps.qspiders.com/ui/slider?sublist=0");
+
+    let slider = page.locator("input[type='range']");
+
+    let boundingBox = await slider.boundingBox();
+
+    if (!boundingBox) {
+        throw new Error("Slider not found");
+    }
+
+    let targetValue = 109;
+    let minValue = 0;
+    let maxValue = 6000;
+
+    let percentage = (targetValue - minValue) / (maxValue - minValue);
+
+    let startX = boundingBox.x;
+    let targetX = boundingBox.x + (boundingBox.width * percentage);
+
+    let y = boundingBox.y + (boundingBox.height / 2);
+
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    //await page.mouse.move(targetX, y, { steps: 10 });
+    await page.mouse.move(targetX, y);
+    await page.mouse.up();
+
+});
+
+
+
