@@ -1990,8 +1990,256 @@ test.only("autosuggestion dropdown",async({page})=>{
   }
 })
 ```
+## Test cases
+### testcase1
+ 1. Open the website https://automationexercise.com/products
+ 2. Hover over the first product
+ 3. Click the “Add to cart” button that appears in the overlay
+ 4. WAIT until the popup is visible
+ 5. Assertion: the popup text is “Your product has been added to cart.”
+ ```typescript
+ 
+test.skip("TestCase1", async({page})=>{
+    await page.goto("https://automationexercise.com/products");
+
+    const firstProduct = page.locator('.features_items .single-products').first();
+    await firstProduct.scrollIntoViewIfNeeded();
+
+    await firstProduct.hover();
+    await firstProduct.locator('.product-overlay .add-to-cart').click();
+
+   
+    let popUPMessageLocator = page.locator("//div[@id='cartModal']//p[@class='text-center']").first();
+
+    // Assert the text is present
+    await expect(popUPMessageLocator).toContainText('Your product has been added to cart.');
+
+    await page.waitForTimeout(2000);
+})
+```
+
+### Test Case 2:
+1. Open the website https://www.easemytrip.com
+2. Click on the Departure date field
+3. WAIT until the calendar is visible
+4. Click on date feb 3
+```typescript
+test.skip("TestCase2-Easemytrip", async({page})=>{
+    await page.goto("https://www.easemytrip.com/");
+
+    expect(page).toHaveTitle("EaseMyTrip : Book Flights, Hotels, Trains, Bus & Holidays");
+
+    let targetMonthYear: string = "February 2027";
+
+    //Enter From City
+    let fromLocator = page.locator(".telab",{hasText:"From"});
+    await expect(fromLocator).toBeVisible();
+    await fromLocator.click();
+    let fromCityInputLocator = page.locator("#txtAutoOrgLoc");
+    await expect(fromCityInputLocator).toBeVisible();
+    await fromCityInputLocator.fill("Bangalore");
+    await expect(fromCityInputLocator).toHaveValue("Bangalore");
+
+    //Enter To City
+    let toLocator = page.locator(".telab",{hasText:"To"});
+    await expect(toLocator).toBeVisible();
+    await toLocator.click();
+    let toCityInputLocator = page.locator("#txtAutoDesLoc");
+    await expect(toCityInputLocator).toBeVisible();
+    await toCityInputLocator.fill("Kochi");
+    await expect(toCityInputLocator).toHaveValue("Kochi");
+
+    //Click on Departure Date Field
+    let fromDateLocator = page.getByText("Departure Date");
+    await fromDateLocator.click();
+
+    //Wait for Calendar to Open
+    let calendarLocator = page.locator(".month-labels span").first();
+    await expect(calendarLocator).toBeVisible();
+
+    let nextButtonLocator = page.locator("#Nxtbtn");
+
+    let currentMonthYear = await calendarLocator.textContent();
+
+    //Click next button,until we have February 2027 in calendar 
+    if(currentMonthYear !== targetMonthYear){
+        while(true){
+            await nextButtonLocator.click();
+            currentMonthYear = await calendarLocator.textContent();
+            if(currentMonthYear == targetMonthYear){
+                break;
+            }
+        }
+    }
+
+    //Click on date 4 Feb 2027.
+    let febContainer = page.locator("//div[@class='month-title' and text()=' February 2027 ']/..");
+    let dateLocator = febContainer.getByText("4",{exact:true});
+    await dateLocator.click();
+
+    await page.waitForTimeout(3000);
+})
+```
+
+### testcase 3:
+1. Open the website https://www.google.com.
+2 .locate textfield ,enter play
+3 .Click on the suggestion playwright
+Assertion: the URL contains playwright
+
+### Test Case: OrangeHRM add an employee and search in the Employee List
+
+1. Open the website https://opensource-demo.orangehrmlive.com
+2. Locate the username and password field and enter Admin and admin123
+3. Click on the Login button Assertion: the URL contains dashboard
+4. Click on PIM in the left menu
+5. Click on Add Employee
+6. Locate the first name field, enter eg(amruta) and Locate the last name field, enter eg(R)
+7. Click on the Save button Assertion: the URL contains viewPersonalDetails
+8. Click on Employee List
+9. Locate the Employee Name field, enter eg{amruta}
+10. Click on the Search button Assertion: the results table shows "amruta"
+11. Click on the user dropdown (top right corner)
+12. Click on Logout  
+
+// 18/11/2026
+
+Frames
+
+//20/11/2026
+## Popup
+- Used to give/take infromation to/from user.
+
+### Types of Popups
+1. dialog
+2. new tab/new window
+3. notification popup
+4. file upload popup
+5. file download
+6. authentication popup.
+
+### Dialog Popup
+- It is browser generated popup triggered by javascript.
+- It is not part of Dom.
+- It requires a response,before we can continue on the page.
+- Differrent types of Dialog Popup are: alert, confirmation,prompt
+- alert-ok
+- confirmation- ok+cancel
+- prompt- ok+cancel+textfield
 
 
+#### Alert Popup
+- By default dialog popups are dismissed by PLaywright.
+- Means- for Alert it clicks Ok.For Confirmation and Prompt it will click on Cancel button.No need to handle it.
+- But if we want to click on accept or ok button,or if we want to validate the text or enter our own text
+  use 2 event listeners
+  1. page.on
+  2. page.once
+
+##### Page.on
+- Used when we want to handle alert by ourselves.
+- page.on('eventname',()=>{validation})
+- We have to write it in the beginning of the script.
+- Whenever any popup-alert/confirmation/prompt apperas this will handle it.
+- It is used to handle all the dialogs triggered during a script execution.
+
+##### Page.once
+- Used to lsten for the first event only.So it will handle first event and then destroyed.The remaining events will be autodismissed by playwright.
+//Fill notes
+
+// 23/11/2026
+
+// 24/11/2026
+## Managing Windows
+
+```typescript
+
+test.only("mutiplewindow", async({browser})=>{
+  let context = await browser.newContext()
+  let parentpage = await context.newPage()
+  await parentpage.goto("https://www.shoppersstack.com/products_page/70")
+
+  //Why Promise.all is used: parentpage.waitForEvent('popup') sets up a listener before .click() fires. 
+  // If you called await parentpage.locator("#compare").click() first and waited for 'popup' afterward,
+  // a fast popup could open before the listener was attached, causing a race condition/timeout.
+  // Promise.all([...]) returns an array of two items, and [childwindows] grabs only the first item—
+  // which is the Playwright Page object representing the newly opened popup window.
+  // What Each Promise Inside Promise.all Resolves To Index 0 (parentpage.waitForEvent('popup')):
+  // Resolves to a Page instance (the first popup tab/window opened from parentpage).
+  // Index 1 (parentpage.locator("#compare").click()): Resolves to undefined (.click() does not return a value when finished).
+  // So before destructuring, the resolved array looks like: [ popupPage, undefined ]
+  // How Array Destructuring [childwindows] Maps It
+  // childwindows gets index 0 -> the new popup Page object (so you can call methods like 
+  // childwindows. title(), childwindows.url(), childwindows.locator(...), or childwindows.waitForLoadState('load')).
+  // Index 1 (undefined) is ignored because you didn't list a second variable name.
+  // What If #compare Opens Multiple Popups?Even if clicking #compare opens two or three popup windows, parentpage.
+  // waitForEvent('popup') only listens for one 'popup' event and resolves with that first popup Page. 
+  // To get every popup that opened, you look at context.pages() (or listen to context.on('page', ...)).
+  let [childwindows]=await Promise.all([
+    parentpage.waitForEvent('popup'),
+    parentpage.locator("#compare").click()
+  ])
+
+  // Ensures parentpage is settled after clicking #compare 
+  // (in case clicking the button triggered navigation or updated resources on the parent tab).
+  await parentpage.waitForLoadState('load')
+
+  // Newly opened popup windows often start on about:blank or load their external page asynchronously after opening. 
+  // Waiting for 'load' on childwindows helps make sure the popup's initial content/title is ready before 
+  // your for (const pw of allwindow) loop checks await pw.title()
+  await childwindows.waitForLoadState('load')
+  let allwindow=context.pages()
+  console.log("Total Windows:"+allwindow.length)
+  for (const [index, win] of allwindow.entries()) {
+    console.log(`Window ${index} URL:`, win.url());
+  }
+//   console.log(allwindow[0].url())
+//   console.log(allwindow[1].url())
+//   console.log(allwindow[2].url())
+//   console.log(allwindow[3].url())
+
+  for(const pw of allwindow){
+    const title=await pw.title()
+    if(title.includes("Online Shopping Site for Mobiles, Electronics, Furniture, Grocery")){
+      await pw.setViewportSize({width:1366,height:768})
+      let searchfield= pw.locator("[placeholder='Search for Products, Brands and More']")
+      await expect(searchfield).toBeVisible({timeout:40000});
+      await searchfield.fill("iphone")
+      await expect(searchfield).toHaveValue("iphone")
+    }
+  }
+
+  await context.close();
+})
+```
+```typescript
+test.only("multiple windows2",async({browser})=>{
+    //Without await, context1 is a Promise<BrowserContext>, not a BrowserContext instance, 
+    // so context1.newPage() throws a TypeError: context1.newPage is not a function.
+    let context1  = await browser.newContext();
+    let pageOne = await context1.newPage();
+    let pageTwo = await context1.newPage();
+
+    await pageOne.goto("https://www.selenium.dev/");
+    await expect(pageOne).toHaveURL("https://www.selenium.dev/");
+    await pageTwo.goto("https://playwright.dev/java/");
+    await expect(pageTwo).toHaveURL("https://playwright.dev/java/");
+
+    let allwindow = context1.pages();
+
+    for(const pw of allwindow){
+        let pageTitle = await pw.title();
+        if(pageTitle.includes("Playwright")){
+            let getStartedLoc = pw.getByRole("link",{name:"Get Started"})
+            await expect(getStartedLoc).toBeVisible();
+            await getStartedLoc.click();
+            await expect(pw).toHaveURL("https://playwright.dev/java/docs/intro");
+        }
+    }
+
+})
+```
+  
 
 
 
