@@ -2278,7 +2278,7 @@ test("fileUpload", async ({ page }) => {
 ```
  ### Authentication popup
  - Its Browser based popup.Cannot use page fixture.Will have to use browser fixture.
- ```typecript
+ ```typescript
  test("authenication", async ({ browser }) => {
     let context = await browser.newContext({
         httpCredentials: {
