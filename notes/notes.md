@@ -2239,7 +2239,58 @@ test.only("multiple windows2",async({browser})=>{
 
 })
 ```
-  
+### File Upload Popup
+```typescript
+import {expect, test} from "@playwright/test";
+import path from "path"
+
+test("fileUpload", async ({ page }) => {
+    await page.goto("https://testautomationpractice.blogspot.com/")
+    //from local system 
+    // single file
+    await page.locator("#singleFileInput").setInputFiles("D:/PlaywrightCourse/uploadResource/Assertion.txt")
+    await page.locator("//button[text()='Upload Single File']").click()
+    await expect(page.locator("#singleFileStatus")).toContainText("Assertion.txt")
+
+    //multiple file
+    await page.locator("#multipleFilesInput").setInputFiles(["D:/PlaywrightCourse/uploadResource/Assertion.txt",
+        "D:/PlaywrightCourse/uploadResource/Commands.txt"])
+    await page.locator("//button[text()='Upload Multiple Files']").click()
+    await expect(page.locator("#multipleFilesStatus")).toHaveText(/Assertion\.txt[\s\S]*Commands\.txt/)
+
+    //from project
+    //single
+    await page.locator("#singleFileInput").setInputFiles([path.join(__dirname, "../uploadResource/Assertion.txt")])
+    await page.locator("//button[text()='Upload Single File']").click()
+    await expect(page.locator("#singleFileStatus")).toContainText("Assertion.txt")
+
+    // //multiple file
+    await page.locator("#multipleFilesInput").setInputFiles([path.join(__dirname, "../uploadResource/Assertion.txt"),
+        path.join(__dirname, "../uploadResource/Commands.txt"),])
+    await page.locator("//button[text()='Upload Multiple Files']").click()
+    await expect(page.locator("#multipleFilesStatus")).toHaveText(/Assertion\.txt[\s\S]*Commands\.txt/)
+
+    // //remove
+    await page.locator("#multipleFilesInput").setInputFiles([])
+    await page.locator("//button[text()='Upload Multiple Files']").click()
+    await expect(page.locator("#multipleFilesStatus")).toHaveText("No files selected.")
+})
+```
+ ### Authentication popup
+ - Its Browser based popup.Cannot use page fixture.Will have to use browser fixture.
+ ```typecript
+ test("authenication", async ({ browser }) => {
+    let context = await browser.newContext({
+        httpCredentials: {
+            username: "admin",
+            password: "admin"
+        }
+    })
+    let page = await context.newPage()
+    await page.goto("https://the-internet.herokuapp.com/basic_auth")
+    await expect(page.locator("//p")).toContainText("Congratulations! You must have the proper credentials.")
+})
+```
 
 
 
