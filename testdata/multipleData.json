@@ -1,0 +1,30 @@
+[
+  {
+    "id":1,
+    "url": "https://www.saucedemo.com/",
+    "username": "standard_user",
+    "password": "secret_sauce",
+    "assertion": "https://www.saucedemo.com/inventory.html"
+  },
+  {
+    "id":2,
+    "url": "https://www.saucedemo.com/",
+    "username": "problem_user",
+    "password": "secret_sauce",
+    "assertion": "https://www.saucedemo.com/inventory.html"
+  },
+  {
+    "id":3,
+    "url": "https://www.saucedemo.com/",
+    "username": "performance_glitch_user",
+    "password": "secret_sauce",
+    "assertion": "https://www.saucedemo.com/inventory.html"
+  },
+  {
+    "id":4,
+    "url": "https://www.saucedemo.com/",
+    "username": "error_user",
+    "password": "secret_sauce",
+    "assertion": "https://www.saucedemo.com/inventory.html"
+  }
+]

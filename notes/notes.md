@@ -2291,6 +2291,66 @@ test("fileUpload", async ({ page }) => {
     await expect(page.locator("//p")).toContainText("Congratulations! You must have the proper credentials.")
 })
 ```
+### Notification Popup
+- Browser level popups triggered by apis.
+- These Popups are not inspectable.Hence we have to use Browser fixture to handle them.
+- Two types: Wbpush and Permission.
+- Permission popup- We need to allow or deny.
+- Webpush- We have to send message.
+- By default Playwright is going to deny Notifiation popup.
+
+```typescript
+import { expect, test } from "@playwright/test"
+
+test("notification", async ({ browser }) => {
+    let context = await browser.newContext({
+        permissions: ["notifications"]
+    })
+    //await context.clearPermissions()
+    let page = await context.newPage()
+    await page.goto("https://demoapps.qspiders.com/ui/browserNot?sublist=0")
+    await page.locator("#browNotButton").click()
+    let result = await page.evaluate(() => {
+        return Notification.requestPermission()
+    })
+    console.log(result)
+})
+```
+
+### File Download Popup
+```typescript
+import { expect, test } from "@playwright/test"
+import path from "path"
+import fs from "fs"
+
+test.only("waitforevent", async ({page}) => {
+    await page.goto("https://demoapps.qspiders.com/ui/download?sublist=0")
+    await page.locator("#writeArea").fill("im downloading a file")
+    let [downloadfile] = await Promise.all([
+        page.waitForEvent('download'),
+        page.locator("#downloadButton").click()
+    ])
+    console.log(await downloadfile.path())
+    console.log(downloadfile.suggestedFilename())
+
+    //store the file in download floder
+    // let downloadfolder="D:/PlaywrightCourse/downloadResource"
+    // let filename= downloadfile.suggestedFilename()
+    // await downloadfile.saveAs(path.join(downloadfolder,filename))
+
+    //local system
+    let downloadfolder = "C:/Users/89jit/Downloads"
+    let filename = downloadfile.suggestedFilename()
+    await downloadfile.saveAs(path.join(downloadfolder, filename))
+
+    //read the data
+    let file = path.join(downloadfolder, filename)
+
+    let data = fs.readFileSync(file, 'utf-8')
+    expect(data).toContain("im downloading a file")
+})
+```
+
 
 
 
